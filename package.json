@@ -17,6 +17,18 @@
   },
   "homepage": "https://github.com/frli4797/homebridge-sector#readme",
   "dependencies": {
+    "polling-to-event": "^2.1.0",
     "sectoralarm": "^1.2.1"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "homebridge-plugin",
+    "homebridge",
+    "homekit",
+    "security-system"
+  ],
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
   }
 }
