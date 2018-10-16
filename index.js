@@ -221,7 +221,7 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
                 break;
             case Characteristic.SecuritySystemTargetState.AWAY_ARM:
                 self.log.warn("Doing nothing.");
-                // site.arm(self.code)
+                site.arm(self.code)
                 break;
             case Characteristic.SecuritySystemTargetState.DISARM:
                 site.disarm(self.code);
