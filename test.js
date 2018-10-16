@@ -18,4 +18,4 @@ sectoralarm.connect(email,password,siteId)
     .catch(error => {
         console.log(error.message);
         console.log(error.code);
-    })
+    });

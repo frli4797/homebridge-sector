@@ -22,7 +22,7 @@ var currentState;
 function SectorSecuritySystemAccessory(log, config) {
 	var self = this;
 	self.log = log;
-    self.name = config["name"];
+    self.name = config.name;
     
     self.email = config.email;
     self.password = config.password;
@@ -44,7 +44,7 @@ function SectorSecuritySystemAccessory(log, config) {
 	self.previousCurrentState = null;
     self.previousTargetState = null;
     
-    self.log("About to initialize.")
+    self.log("About to initialize.");
     self.init();
 }
 
@@ -63,14 +63,14 @@ function translateFromState(log, aState) {
             translatedSate = "armed";
             break;
         case Characteristic.SecuritySystemTargetState.DISARM:
-            translatedSate = "disarmed"
+            translatedSate = "disarmed";
             break;
         case 4:
-            translatedSate = "ALARM"
+            translatedSate = "ALARM";
             break;
-    };
+    }
 
-    return translatedSate
+    return translatedSate;
 }
 
 function translateToState(log, aState) {
@@ -97,12 +97,12 @@ function translateToState(log, aState) {
             translatedSate = Characteristic.SecuritySystemTargetState.DISARM;
             break;
         case 4:
-            translatedSate = "ALARM"
+            translatedSate = "ALARM";
             break;
-    };
+    }
 
     log.debug("translateToState() Translated state is " + translatedSate);
-    return translatedSate
+    return translatedSate;
 }
 
 
@@ -111,7 +111,7 @@ function translateToState(log, aState) {
  */
 SectorSecuritySystemAccessory.prototype.init = function() {
 	var self = this;
-    self.log("Initilizing...")
+    self.log("Initilizing...");
 	// set up polling if requested
     if (self.polling) {
         self.log("Starting polling with an interval of %s ms", self.pollInterval);
@@ -125,7 +125,7 @@ SectorSecuritySystemAccessory.prototype.init = function() {
         });
 
         emitter.on("longpoll", function (state) {
-            self.log.debug("In poll function")
+            self.log.debug("In poll function");
             
             if (state) {
                 // Get OnceMore time Current State:
@@ -139,7 +139,7 @@ SectorSecuritySystemAccessory.prototype.init = function() {
             self.log("Polling failed, error was %s", err);
         });
     }
-    self.log.debug("Exiting init...")
+    self.log.debug("Exiting init...");
 };
 
 /**
@@ -150,37 +150,37 @@ SectorSecuritySystemAccessory.prototype.init = function() {
  * @param {Function} callback The method to call with the results
  */
 SectorSecuritySystemAccessory.prototype.getState = function(callback) {
-    this.log.debug("getState() Getting state")
+    this.log.debug("getState() Getting state");
 
     sectoralarm.connect(this.email, this.password, this.siteId)
     .then(site => {
         return site.status();
     })
     .then(status => {
-        status = JSON.parse(status)
+        status = JSON.parse(status);
         alarmstate = undefined;
         if(status.armedStatus == "disarmed" && status.annexStatus == "armed") {
             alarmstate = "annex";
         } else {
             alarmstate = status.armedStatus;
         }
-        this.log.debug("getState() Armed status: " + alarmstate)
+        this.log.debug("getState() Armed status: " + alarmstate);
         callback(null, translateToState(this.log, alarmstate));
     })
     .catch(error => {
         this.log(error.message);
         this.log(error.code);
         callback(error);
-    })
+    });
 };
 
 SectorSecuritySystemAccessory.prototype.getCurrentState = function(callback) {
-    this.log("getCurrentState() Getting current state")
+    this.log("getCurrentState() Getting current state");
 
     var self = this;
 
     if (self.polling) {
-        this.log("getCurrentState() Returning current state " + currentState)
+        this.log("getCurrentState() Returning current state " + currentState);
         callback(null, currentState);
     } else {
         self.log('getCurrentState() Getting current state - delayed...');
@@ -209,27 +209,27 @@ SectorSecuritySystemAccessory.prototype.getCurrentState = function(callback) {
  */
 SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callback) {
     self = this; 
-    self.log.debug("Setting target state to " + state + ". Current state is " + currentState)
+    self.log.debug("Setting target state to " + state + ". Current state is " + currentState);
     sectoralarm.connect(self.email, self.password, self.siteId)
     .then((site) => {
         switch (state) {
             case Characteristic.SecuritySystemTargetState.STAY_ARM:
-                site.partialArm(self.code)
+                site.partialArm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                site.annexArm(self.code)
+                site.annexArm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-                self.log.warn("Doing nothing.")
+                self.log.warn("Doing nothing.");
                 // site.arm(self.code)
                 break;
             case Characteristic.SecuritySystemTargetState.DISARM:
-                site.disarm(self.code)
+                site.disarm(self.code);
                 break;
-        };
+        }
     })
     .then(output => {
-        this.log.debug("setTargetState() Raw output: " + output)
+        this.log.debug("setTargetState() Raw output: " + output);
         currentState = state;
         /*status = JSON.parse(site.status())
         alarmstate = undefined;
@@ -247,13 +247,13 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
         this.log(error.message);
         this.log(error.code);
         callback(error);
-    })
+    });
 };
 
 SectorSecuritySystemAccessory.prototype.getTargetState = function(callback) {
     self = this;
 
-    self.log.info("getTargetState() Getting target state.")
+    self.log.info("getTargetState() Getting target state.");
     if (self.polling) {
         self.log("getTargetState() Getting target state using polling. Current state is " + currentState);
         if(currentState) {
