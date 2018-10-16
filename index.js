@@ -1,13 +1,14 @@
 var Service, Characteristic;
 
 var pollingtoevent = require("polling-to-event");
-const sectoralarm = require('sectoralarm');
+const waitUntil = require("wait-until");
+const sectoralarm = require("sectoralarm");
 
 
 module.exports = function(homebridge){
-	Service = homebridge.hap.Service;
-	Characteristic = homebridge.hap.Characteristic;
-	homebridge.registerAccessory("homebridge-sector-securitysystem", "Sector-SecuritySystem", SectorSecuritySystemAccessory);
+    Service = homebridge.hap.Service;
+    Characteristic = homebridge.hap.Characteristic;
+    homebridge.registerAccessory("homebridge-sector-securitysystem", "Sector-SecuritySystem", SectorSecuritySystemAccessory);
 };
 
 var currentState;
@@ -20,8 +21,8 @@ var currentState;
  * @constructor
  */
 function SectorSecuritySystemAccessory(log, config) {
-	var self = this;
-	self.log = log;
+    var self = this;
+    self.log = log;
     self.name = config.name;
     
     self.email = config.email;
@@ -29,19 +30,19 @@ function SectorSecuritySystemAccessory(log, config) {
     self.siteId = config.siteId;
     self.code = config.code;
 
-	// the service
-	self.securityService = null;
+    // the service
+    self.securityService = null;
 
-	// debug flag
+    // debug flag
     //self.debug = config.debug;
     self.debug = true;
 
-	// polling settings
+    // polling settings
     self.polling = true;
-	self.pollInterval = config.pollInterval || 3000;
+    self.pollInterval = config.pollInterval || 3000;
 
-	// cached values
-	self.previousCurrentState = null;
+    // cached values
+    self.previousCurrentState = null;
     self.previousTargetState = null;
     
     self.log("About to initialize.");
@@ -53,21 +54,21 @@ function translateFromState(log, aState) {
     var translatedSate = "UNKNOWN";
 
     switch (aState) {
-        case Characteristic.SecuritySystemTargetState.STAY_ARM:
-            translatedSate = "partial";
-            break;
-        case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-            translatedSate = "annex";
-            break;
-        case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-            translatedSate = "armed";
-            break;
-        case Characteristic.SecuritySystemTargetState.DISARM:
-            translatedSate = "disarmed";
-            break;
-        case 4:
-            translatedSate = "ALARM";
-            break;
+    case Characteristic.SecuritySystemTargetState.STAY_ARM:
+        translatedSate = "partial";
+        break;
+    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
+        translatedSate = "annex";
+        break;
+    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
+        translatedSate = "armed";
+        break;
+    case Characteristic.SecuritySystemTargetState.DISARM:
+        translatedSate = "disarmed";
+        break;
+    case 4:
+        translatedSate = "ALARM";
+        break;
     }
 
     return translatedSate;
@@ -84,21 +85,21 @@ function translateToState(log, aState) {
     var translatedSate = "UNKNOWN";
 
     switch (String(aState)) {
-        case "partial":
-            translatedSate = Characteristic.SecuritySystemTargetState.STAY_ARM;
-            break;
-        case "annex":
-            translatedSate = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
-            break;
-        case "armed":
-            translatedSate = Characteristic.SecuritySystemTargetState.AWAY_ARM;
-            break;
-        case "disarmed":
-            translatedSate = Characteristic.SecuritySystemTargetState.DISARM;
-            break;
-        case 4:
-            translatedSate = "ALARM";
-            break;
+    case "partial":
+        translatedSate = Characteristic.SecuritySystemTargetState.STAY_ARM;
+        break;
+    case "annex":
+        translatedSate = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
+        break;
+    case "armed":
+        translatedSate = Characteristic.SecuritySystemTargetState.AWAY_ARM;
+        break;
+    case "disarmed":
+        translatedSate = Characteristic.SecuritySystemTargetState.DISARM;
+        break;
+    case 4:
+        translatedSate = "ALARM";
+        break;
     }
 
     log.debug("translateToState() Translated state is " + translatedSate);
@@ -110,9 +111,9 @@ function translateToState(log, aState) {
  * Initializer method, fired after the config has been applied
  */
 SectorSecuritySystemAccessory.prototype.init = function() {
-	var self = this;
+    var self = this;
     self.log("Initilizing...");
-	// set up polling if requested
+    // set up polling if requested
     if (self.polling) {
         self.log("Starting polling with an interval of %s ms", self.pollInterval);
         var emitter = pollingtoevent(function (done) {
@@ -129,9 +130,9 @@ SectorSecuritySystemAccessory.prototype.init = function() {
             
             if (state) {
                 // Get OnceMore time Current State:
-                        self.log.debug("New state detected: (" + state + ") -> " + translateFromState(self.log, state) + ". Notify!");
-                        self.securityService.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
-                        currentState = state;
+                self.log.debug("New state detected: (" + state + ") -> " + translateFromState(self.log, state) + ". Notify!");
+                self.securityService.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
+                currentState = state;
             }
         });
 
@@ -150,32 +151,32 @@ SectorSecuritySystemAccessory.prototype.init = function() {
  * @param {Function} callback The method to call with the results
  */
 SectorSecuritySystemAccessory.prototype.getState = function(callback) {
-    self = this;
+    var self = this;
     self.log.debug("getState() Getting state");
 
     sectoralarm.connect(self.email, self.password, self.siteId)
-    .then(site => {
-        return site.status();
-    })
-    .then(status => {
-        status = JSON.parse(status);
-        // self.log.debug("Status = " + JSON.stringify(status)); 
-        //{"siteId":"3333333","name":"Hemma","armedStatus":"disarmed","partialArmingAvailable":true,"annexAvailable":true,"annexStatus":"disarmed"}
-        alarmstate = undefined;
-        if(status.armedStatus == "disarmed" && status.annexStatus == "armed") {
-            alarmstate = "annex";
-        } else {
-            alarmstate = status.armedStatus;
+        .then(site => {
+            return site.status();
+        })
+        .then(status => {
+            status = JSON.parse(status);
+            // self.log.debug("Status = " + JSON.stringify(status)); 
+            //{"siteId":"3333333","name":"Hemma","armedStatus":"disarmed","partialArmingAvailable":true,"annexAvailable":true,"annexStatus":"disarmed"}
+            var alarmstate;
+            if(status.armedStatus == "disarmed" && status.annexStatus == "armed") {
+                alarmstate = "annex";
+            } else {
+                alarmstate = status.armedStatus;
             
-        }
-        self.log.debug("getState() Armed status: " + alarmstate);
-        callback(null, translateToState(self.log, alarmstate));
-    })
-    .catch(error => {
-        self.log(error.message);
-        self.log(error.code);
-        callback(error);
-    });
+            }
+            self.log.debug("getState() Armed status: " + alarmstate);
+            callback(null, translateToState(self.log, alarmstate));
+        })
+        .catch(error => {
+            self.log(error.message);
+            self.log(error.code);
+            callback(error);
+        });
 };
 
 SectorSecuritySystemAccessory.prototype.getCurrentState = function(callback) {
@@ -186,17 +187,17 @@ SectorSecuritySystemAccessory.prototype.getCurrentState = function(callback) {
         self.log("getCurrentState() Returning current state " + currentState);
         callback(null, currentState);
     } else {
-        self.log('getCurrentState() Getting current state - delayed...');
+        self.log("getCurrentState() Getting current state - delayed...");
         waitUntil()
             .interval(500)
             .times(15)
             .condition(function () {
-                self.log('getCurrentState() In condition ' + currentState);
+                self.log("getCurrentState() In condition " + currentState);
                 return (currentState ? true : false);
             })
             .done(function (result) {
                 // do stuff
-                self.log('getCurrentState() Update current state to:', currentState);
+                self.log("getCurrentState() Update current state to:", currentState);
                 callback(null, currentState);
 
             });
@@ -211,11 +212,11 @@ SectorSecuritySystemAccessory.prototype.getCurrentState = function(callback) {
  * @param {Function} callback The method to call with the results
  */
 SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callback) {
-    self = this; 
+    var self = this;
     self.log.debug("Setting target state to " + state + ". Current state is " + currentState);
     sectoralarm.connect(self.email, self.password, self.siteId)
-    .then((site) => {
-        switch (state) {
+        .then((site) => {
+            switch (state) {
             case Characteristic.SecuritySystemTargetState.STAY_ARM:
                 site.partialArm(self.code);
                 break;
@@ -229,12 +230,12 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
             case Characteristic.SecuritySystemTargetState.DISARM:
                 site.disarm(self.code);
                 break;
-        }
-    })
-    .then(output => {
-        self.log.debug("setTargetState() Raw output: " + output);
-        currentState = state;
-        /*status = JSON.parse(site.status())
+            }
+        })
+        .then(output => {
+            self.log.debug("setTargetState() Raw output: " + output);
+            currentState = state;
+            /*status = JSON.parse(site.status())
         alarmstate = undefined;
         if(status.armedStatus == "disarmed" && status.annexStatus == "armed") {
             alarmstate = "annex";
@@ -243,19 +244,18 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
         }
         self.log.debug("setTargetState() Armed status: " + alarmstate)
         currentState = translateToState(self.log, state) */
-        self.securityService.setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
-        callback(null, state);
-    })
-    .catch(error => {
-        self.log(error.message);
-        self.log(error.code);
-        callback(error);
-    });
+            self.securityService.setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
+            callback(null, state);
+        })
+        .catch(error => {
+            self.log(error.message);
+            self.log(error.code);
+            callback(error);
+        });
 };
 
 SectorSecuritySystemAccessory.prototype.getTargetState = function(callback) {
-    self = this;
-
+    var self = this;
     self.log.info("getTargetState() Getting target state.");
     if (self.polling) {
         self.log("getTargetState() Getting target state using polling. Current state is " + currentState);
@@ -277,8 +277,9 @@ SectorSecuritySystemAccessory.prototype.getTargetState = function(callback) {
  * @param {Function} callback The method to call with the results
  */
 SectorSecuritySystemAccessory.prototype.identify = function(callback) {
-	self.log("Identify requested!");
-	callback();
+    var self = this;
+    self.log("Identify requested!");
+    callback();
 };
 
 /**
@@ -287,22 +288,22 @@ SectorSecuritySystemAccessory.prototype.identify = function(callback) {
  * @returns {Array} The services offered
  */
 SectorSecuritySystemAccessory.prototype.getServices =  function() {
-	this.securityService = new Service.SecuritySystem(this.name);
+    this.securityService = new Service.SecuritySystem(this.name);
 
-	this.securityService
-		.getCharacteristic(Characteristic.SecuritySystemCurrentState)
-		.on("get", this.getCurrentState.bind(this));
+    this.securityService
+        .getCharacteristic(Characteristic.SecuritySystemCurrentState)
+        .on("get", this.getCurrentState.bind(this));
 
-	this.securityService
-		.getCharacteristic(Characteristic.SecuritySystemTargetState)
-		.on("get", this.getTargetState.bind(this))
-		.on("set", this.setTargetState.bind(this));
+    this.securityService
+        .getCharacteristic(Characteristic.SecuritySystemTargetState)
+        .on("get", this.getTargetState.bind(this))
+        .on("set", this.setTargetState.bind(this));
 
-        this.infoService = new Service.AccessoryInformation();
-        this.infoService
-            .setCharacteristic(Characteristic.Manufacturer, "Fredrik JL")
-            .setCharacteristic(Characteristic.Model, this.name)
-            .setCharacteristic(Characteristic.SerialNumber, "1234");
+    this.infoService = new Service.AccessoryInformation();
+    this.infoService
+        .setCharacteristic(Characteristic.Manufacturer, "Fredrik JL")
+        .setCharacteristic(Characteristic.Model, this.name)
+        .setCharacteristic(Characteristic.SerialNumber, "1234");
 
-	return [ this.securityService ];
+    return [ this.securityService ];
 };
