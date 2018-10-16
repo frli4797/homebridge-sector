@@ -150,37 +150,40 @@ SectorSecuritySystemAccessory.prototype.init = function() {
  * @param {Function} callback The method to call with the results
  */
 SectorSecuritySystemAccessory.prototype.getState = function(callback) {
-    this.log.debug("getState() Getting state");
+    self = this;
+    self.log.debug("getState() Getting state");
 
-    sectoralarm.connect(this.email, this.password, this.siteId)
+    sectoralarm.connect(self.email, self.password, self.siteId)
     .then(site => {
         return site.status();
     })
     .then(status => {
         status = JSON.parse(status);
+        // self.log.debug("Status = " + JSON.stringify(status)); 
+        //{"siteId":"3333333","name":"Hemma","armedStatus":"disarmed","partialArmingAvailable":true,"annexAvailable":true,"annexStatus":"disarmed"}
         alarmstate = undefined;
         if(status.armedStatus == "disarmed" && status.annexStatus == "armed") {
             alarmstate = "annex";
         } else {
             alarmstate = status.armedStatus;
+            
         }
-        this.log.debug("getState() Armed status: " + alarmstate);
-        callback(null, translateToState(this.log, alarmstate));
+        self.log.debug("getState() Armed status: " + alarmstate);
+        callback(null, translateToState(self.log, alarmstate));
     })
     .catch(error => {
-        this.log(error.message);
-        this.log(error.code);
+        self.log(error.message);
+        self.log(error.code);
         callback(error);
     });
 };
 
 SectorSecuritySystemAccessory.prototype.getCurrentState = function(callback) {
-    this.log("getCurrentState() Getting current state");
-
     var self = this;
+    self.log("getCurrentState() Getting current state");
 
     if (self.polling) {
-        this.log("getCurrentState() Returning current state " + currentState);
+        self.log("getCurrentState() Returning current state " + currentState);
         callback(null, currentState);
     } else {
         self.log('getCurrentState() Getting current state - delayed...');
@@ -221,7 +224,7 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
                 break;
             case Characteristic.SecuritySystemTargetState.AWAY_ARM:
                 self.log.warn("Doing nothing.");
-                site.arm(self.code)
+                site.arm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.DISARM:
                 site.disarm(self.code);
@@ -229,7 +232,7 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
         }
     })
     .then(output => {
-        this.log.debug("setTargetState() Raw output: " + output);
+        self.log.debug("setTargetState() Raw output: " + output);
         currentState = state;
         /*status = JSON.parse(site.status())
         alarmstate = undefined;
@@ -238,14 +241,14 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
         } else {
             alarmstate = status.armedStatus;
         }
-        this.log.debug("setTargetState() Armed status: " + alarmstate)
+        self.log.debug("setTargetState() Armed status: " + alarmstate)
         currentState = translateToState(self.log, state) */
         self.securityService.setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
         callback(null, state);
     })
     .catch(error => {
-        this.log(error.message);
-        this.log(error.code);
+        self.log(error.message);
+        self.log(error.code);
         callback(error);
     });
 };
@@ -274,7 +277,7 @@ SectorSecuritySystemAccessory.prototype.getTargetState = function(callback) {
  * @param {Function} callback The method to call with the results
  */
 SectorSecuritySystemAccessory.prototype.identify = function(callback) {
-	this.log("Identify requested!");
+	self.log("Identify requested!");
 	callback();
 };
 
