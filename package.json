@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/frli4797/homebridge-sector#readme",
   "dependencies": {
-    "async-wait-until": "^1.2.4",
     "polling-to-event": "^2.1.0",
     "sectoralarm": "^1.3.0",
     "wait-until": "0.0.2"
