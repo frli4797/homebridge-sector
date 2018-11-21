@@ -33,10 +33,6 @@ function SectorSecuritySystemAccessory(log, config) {
     // the service
     self.securityService = null;
 
-    // debug flag
-    //self.debug = config.debug;
-    self.debug = true;
-
     // polling settings
     self.polling = true;
     self.pollInterval = config.pollInterval || 3000;
@@ -160,8 +156,6 @@ SectorSecuritySystemAccessory.prototype.getState = function(callback) {
         })
         .then(status => {
             status = JSON.parse(status);
-            // self.log.debug("Status = " + JSON.stringify(status)); 
-            //{"siteId":"3333333","name":"Hemma","armedStatus":"disarmed","partialArmingAvailable":true,"annexAvailable":true,"annexStatus":"disarmed"}
             var alarmstate;
             if(status.armedStatus == "disarmed" && status.annexStatus == "armed") {
                 alarmstate = "annex";
@@ -235,15 +229,7 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
         .then(output => {
             self.log.debug("setTargetState() Raw output: " + output);
             currentState = state;
-            /*status = JSON.parse(site.status())
-        alarmstate = undefined;
-        if(status.armedStatus == "disarmed" && status.annexStatus == "armed") {
-            alarmstate = "annex";
-        } else {
-            alarmstate = status.armedStatus;
-        }
-        self.log.debug("setTargetState() Armed status: " + alarmstate)
-        currentState = translateToState(self.log, state) */
+
             self.securityService.setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
             callback(null, state);
         })

@@ -1,0 +1,16 @@
+
+{
+    "accessories": [
+        {
+            "accessory": "Sector-SecuritySystem",
+            "email": "myemail@someplace.com",
+            "password": "SuperSecurePassword",
+            "siteId": "111111", 
+            "code": "6827",    
+            "immediately": false, 
+            "polling": false, 
+            "pollInterval": 60000, 
+            "name": "Home security"
+        }
+    ]
+}
