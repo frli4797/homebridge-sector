@@ -29,11 +29,11 @@ Below is a configuration example snipped that should be inserted into your exist
             "accessory": "Sector-SecuritySystem",
             "email": "myemail@someplace.com",
             "password": "SuperSecurePassword",
-            "siteId": "111111",                 // Sector site id
-            "code": "6827",                     // Panel code
+            "siteId": "111111",                
+            "code": "6827",                    
             "immediately": false, 
-            "polling": false,                   // Polling is always active regardless of this one.
-            "pollInterval": 60000,              // Poll interval in ms.
+            "polling": false,                  
+            "pollInterval": 60000,             
             "name": "Home security"
         }
     ]
