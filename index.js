@@ -54,7 +54,7 @@ function translateFromState(log, aState) {
         translatedSate = "partial";
         break;
     case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-        translatedSate = "annex";
+        translatedSate = "partial";
         break;
     case Characteristic.SecuritySystemTargetState.AWAY_ARM:
         translatedSate = "armed";
@@ -82,7 +82,7 @@ function translateToState(log, aState) {
 
     switch (String(aState)) {
     case "partial":
-        translatedSate = Characteristic.SecuritySystemTargetState.STAY_ARM;
+        translatedSate = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
         break;
     case "annex":
         translatedSate = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
@@ -157,12 +157,8 @@ SectorSecuritySystemAccessory.prototype.getState = function(callback) {
         .then(status => {
             status = JSON.parse(status);
             var alarmstate;
-            if(status.armedStatus == "disarmed" && status.annexStatus == "armed") {
-                alarmstate = "annex";
-            } else {
-                alarmstate = status.armedStatus;
-            
-            }
+            alarmstate = status.armedStatus;
+        
             self.log.debug("getState() Armed status: " + alarmstate);
             callback(null, translateToState(self.log, alarmstate));
         })
@@ -215,7 +211,7 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
                 site.partialArm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                site.annexArm(self.code);
+                site.partialArm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.AWAY_ARM:
                 self.log.warn("Doing nothing.");
