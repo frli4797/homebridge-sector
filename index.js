@@ -215,7 +215,7 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
                 site.partialArm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                site.annexArm(self.code);
+                site.partialArm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.AWAY_ARM:
                 self.log.warn("Doing nothing.");
