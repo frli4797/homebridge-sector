@@ -81,11 +81,11 @@ function translateToState(log, aState) {
     var translatedSate = "UNKNOWN";
 
     switch (String(aState)) {
-    case "partial":
+    case "partialArmed":
         translatedSate = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
         break;
     case "annex":
-        translatedSate = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
+        translatedSate = Characteristic.SecuritySystemTargetState.STAY_ARM;
         break;
     case "armed":
         translatedSate = Characteristic.SecuritySystemTargetState.AWAY_ARM;
@@ -214,7 +214,6 @@ SectorSecuritySystemAccessory.prototype.setTargetState = function(state, callbac
                 site.partialArm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-                self.log.warn("Doing nothing.");
                 site.arm(self.code);
                 break;
             case Characteristic.SecuritySystemTargetState.DISARM:
