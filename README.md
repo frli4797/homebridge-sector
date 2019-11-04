@@ -15,7 +15,6 @@ By default, Sector alarm provides three modes (armed, partial armed and disarmed
 There are quite a few things that could be added to this.
 
 * Modularize. Refactor the code to be a platform rather than an accessory. Thus enabling separation between different possible accessories to the alarm system.
-* Support for temperature sensors.
 * Make it possible to configure different states and behaviours to state changes.
 * Clean up the code. 
 
@@ -36,6 +35,22 @@ Below is a configuration example snipped that should be inserted into your exist
             "polling": false,                  
             "pollInterval": 60000,             
             "name": "Home security"
+        },
+        {
+            "accessory": "Sector-SecuritySystemSensor",
+            "email": "myemail@someplace.com",
+            "password": "SuperSecurePassword",
+            "siteId": "111111",
+            "name": "Thermometer Livingroom",
+            "sensorId": "12345678901"
+        },
+        {
+            "accessory": "Sector-SecuritySystemSensor",
+            "email": "myemail@someplace.com",
+            "password": "SuperSecurePassword",
+            "siteId": "111111",
+            "name": "Termometer Basement",
+            "sensorId": "12345678902"
         }
     ]
 }
