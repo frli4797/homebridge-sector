@@ -9,6 +9,7 @@ module.exports = function(homebridge){
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
     homebridge.registerAccessory("homebridge-sector-securitysystem", "Sector-SecuritySystem", SectorSecuritySystemAccessory);
+    homebridge.registerAccessory("homebridge-sector-securitysystem", "Sector-SecuritySystemSensor", SectorSecurityTemperatureAccessory);
 };
 
 var currentState;
@@ -288,3 +289,77 @@ SectorSecuritySystemAccessory.prototype.getServices =  function() {
 
     return [ this.securityService ];
 };
+
+class SectorSecurityTemperatureAccessory {
+    constructor(log, config)
+    {
+        this.log = log;
+
+        this.name = config.name;
+        this.email = config.email;
+        this.password = config.password;
+        this.siteId = config.siteId;
+        this.sensorId = config.sensorId;
+        this.temperature = 0;
+
+        this.init();
+    }
+
+    init() {
+        this.log("Initializing...");
+        this.getAndUpdateTemperature();
+
+        // setup a background polling job to increase performance/responsiveness
+        setInterval(() => {
+            this.getAndUpdateTemperature();
+        }, 60000);
+
+        this.log("Self-test completed successfully.");
+    }
+
+    async getAndUpdateTemperature() {
+        this.log(`Getting temperature for sensor ${this.sensorId}.`);
+        const site = await sectoralarm.connect(this.email, this.password, this.siteId);
+        this.log.debug("Logged in to site.");
+        let result = await site.temperatures(this.sensorId);
+        this.log.debug("Fetched results.");
+        this.log.debug(result);
+
+        result = JSON.parse(result);
+        this.log.debug("Parsed results");
+        this.temperature = parseInt(result[0].temperature);
+        this.log.debug("Parsed temperature: " + this.temperature.toString());
+
+        if (this.currentTemperatureCharacteristic) {
+            this.log.debug("Updating temperature characteristic");
+            this.currentTemperatureCharacteristic.updateValue(this.temperature);
+        }
+
+        this.log.debug("Returning current value.");
+        return this.temperature;
+    }
+
+    getTemperatureWithCallback(callback) {
+        this.log.debug(`Providing pre-fetched value ${ this.temperature } to caller!`);
+        callback(null, this.temperature);
+    }
+
+    getServices() {
+        this.log.debug(`Creating info-service for sensor ${this.sensorId}.`);
+        var infoService = new Service.AccessoryInformation();
+        infoService
+            .setCharacteristic(Characteristic.Manufacturer, "Sector Alarm")
+            .setCharacteristic(Characteristic.Model, "IR Sensor")
+            .setCharacteristic(Characteristic.SerialNumber, this.sensorId)
+            .setCharacteristic(Characteristic.FirmwareRevision, "N/A");
+
+        this.log.debug(`Creating temperature-service for sensor ${this.sensorId}.`);
+        var temperatureService = new Service.TemperatureSensor(this.name);
+        this.currentTemperatureCharacteristic = temperatureService.getCharacteristic(Characteristic.CurrentTemperature);
+        this.currentTemperatureCharacteristic.updateValue(this.temperature);
+        this.currentTemperatureCharacteristic.on("get", (callback) => { this.getTemperatureWithCallback(callback); });
+
+        this.log(`Created temperature-services for sensor ${this.sensorId}.`);
+        return [infoService, temperatureService];
+    }
+}
